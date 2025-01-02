@@ -8,6 +8,7 @@ export default class GameScene extends Phaser.Scene {
 	score = 0;
 	scoreText: any;
 	bomb: any;
+	gameOver: boolean = false;
 
 	constructor() {
 		super("GameScene");
@@ -74,8 +75,8 @@ export default class GameScene extends Phaser.Scene {
 
 		this.physics.add.collider(this.stars, this.platforms);
 		this.physics.add.overlap(
-			this.player,
 			this.stars,
+			this.player,
 			this.collectStars,
 			() => {},
 			this
@@ -106,7 +107,29 @@ export default class GameScene extends Phaser.Scene {
 
 		this.score += 10;
 		this.scoreText.setText("score: " + this.score);
+
+		if (this.stars.countActive(true) === 0) {
+			this.stars.children.iterate((child: any) => {
+				child.enableBody(true, child.x, 0, true, true);
+			});
+
+			var x =
+				player.x < 400
+					? Phaser.Math.Between(0, 400)
+					: Phaser.Math.Between(400, 800);
+
+			var bomb = this.bomb.create(x, 0, "bomb");
+			bomb.setBounce(1);
+			bomb.setCollideWorldBounds(true);
+			bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+		}
 	}
 
-	hitBomb() {}
+	hitBomb(player: any, bomb: any) {
+		this.physics.pause();
+		player.setTint(0xff0000);
+
+		player.anims.play("turn");
+		this.gameOver = true;
+	}
 }
