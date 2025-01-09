@@ -8,8 +8,6 @@ export default function Home() {
 	const router = useRouter();
 
 	const buttonFunction = (e: React.MouseEvent<HTMLButtonElement>) => {
-		e.preventDefault();
-		console.log("Hello");
 		router.push("/dashboard");
 	};
 	return (

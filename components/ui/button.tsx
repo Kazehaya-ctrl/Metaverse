@@ -10,8 +10,7 @@ export default function Button(props: propsSchema) {
 	return (
 		<div>
 			<button
-				className={`font-serif ${props.className}`}
-				text-xl
+				className={`font-serif ${props.className} text-xl`}
 				onClick={(e) => props.handleClick(e)}
 			>
 				{props.buttonName}
