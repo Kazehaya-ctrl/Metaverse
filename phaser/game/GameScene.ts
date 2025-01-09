@@ -1,6 +1,8 @@
 import * as Phaser from "phaser";
+import socket from "@/components/utils/socket";
 
 export default class GameScene extends Phaser.Scene {
+	move: boolean = false;
 	cursors: any;
 	platforms: any;
 	player: any;
@@ -18,44 +20,42 @@ export default class GameScene extends Phaser.Scene {
 		this.add.image(400, 300, "sky");
 
 		this.platforms = this.physics.add.staticGroup();
-
 		this.platforms.create(400, 568, "ground").setScale(2).refreshBody();
-
 		this.platforms.create(600, 400, "ground");
 		this.platforms.create(50, 250, "ground");
 		this.platforms.create(750, 220, "ground");
 
-		this.player = this.physics.add.sprite(100, 450, "dude");
+		socket.on("connect", () => {
+			console.log("Player connecting to Server");
+			this.player = this.physics.add.sprite(100, 450, "dude");
+			this.player.setBounce(0.2);
+			this.player.setCollideWorldBounds(true);
 
-		this.player.setBounce(0.2);
-		this.player.setCollideWorldBounds(true);
+			this.anims.create({
+				key: "left",
+				frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 3 }),
+				frameRate: 20,
+				repeat: -1,
+			});
 
-		this.anims.create({
-			key: "left",
-			frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 3 }),
-			frameRate: 20,
-			repeat: -1,
-		});
+			this.anims.create({
+				key: "turn",
+				frames: [{ key: "dude", frame: 4 }],
+				frameRate: 20,
+			});
 
-		this.anims.create({
-			key: "turn",
-			frames: [{ key: "dude", frame: 4 }],
-			frameRate: 20,
-		});
-
-		this.anims.create({
-			key: "right",
-			frames: this.anims.generateFrameNumbers("dude", { start: 5, end: 8 }),
-			frameRate: 20,
-			repeat: -1,
+			this.anims.create({
+				key: "right",
+				frames: this.anims.generateFrameNumbers("dude", { start: 5, end: 8 }),
+				frameRate: 20,
+				repeat: -1,
+			});
 		});
 
 		this.scoreText = this.add.text(16, 16, "score: 0", {
 			fontSize: "32px",
 			color: "#000",
 		});
-
-		this.cursors = this.input.keyboard?.createCursorKeys();
 
 		this.stars = this.physics.add.group({
 			key: "star",
@@ -67,12 +67,11 @@ export default class GameScene extends Phaser.Scene {
 			child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
 		});
 
+		this.cursors = this.input.keyboard?.createCursorKeys();
 		this.bomb = this.physics.add.group();
 
 		this.physics.add.collider(this.bomb, this.platforms);
-
 		this.physics.add.overlap(this.player, this.bomb, this.hitBomb);
-
 		this.physics.add.collider(this.stars, this.platforms);
 		this.physics.add.overlap(
 			this.stars,
@@ -88,9 +87,11 @@ export default class GameScene extends Phaser.Scene {
 	update() {
 		if (this.cursors.left.isDown) {
 			this.player.setVelocityX(-160);
+			this.move = true;
 			this.player.anims.play("left", true);
 		} else if (this.cursors.right.isDown) {
 			this.player.setVelocityX(160);
+			this.move = true;
 			this.player.anims.play("right", true);
 		} else {
 			this.player.setVelocityX(0);
@@ -99,6 +100,10 @@ export default class GameScene extends Phaser.Scene {
 
 		if (this.cursors.up.isDown && this.player.body.touching.down) {
 			this.player.setVelocityY(-330);
+			this.move = true;
+		}
+
+		if (this.move) {
 		}
 	}
 

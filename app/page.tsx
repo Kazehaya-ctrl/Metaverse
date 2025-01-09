@@ -8,7 +8,7 @@ export default function Home() {
 	const router = useRouter();
 
 	const buttonFunction = (e: React.MouseEvent<HTMLButtonElement>) => {
-		router.push("/dashboard");
+		router.push("/game");
 	};
 	return (
 		<div className="h-screen flex flex-col items-center justify-center">
