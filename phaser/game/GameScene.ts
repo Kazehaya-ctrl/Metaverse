@@ -1,6 +1,9 @@
 import * as Phaser from "phaser";
+import socket from "@/components/utils/socket";
+import { playerDetailSchema } from "@/components/interfaces";
 
 let player: Phaser.GameObjects.Sprite;
+let players: Record<string, Phaser.GameObjects.Sprite> = {};
 let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 
 export function preload(this: Phaser.Scene) {
@@ -48,5 +51,14 @@ export function update(this: Phaser.Scene) {
 	if (cursors.down.isDown) {
 		player.y += (speed * this.game.loop.delta) / 1000;
 		moved = true;
+	}
+
+	if (moved) {
+		let playerDetail: playerDetailSchema = {
+			x: player.x,
+			y: player.y,
+			id: socket.id,
+		};
+		socket.emit("playerMoved", playerDetail);
 	}
 }

@@ -1,6 +1,4 @@
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:3000", {
-	path: "/api/socket",
-});
+const socket = io("ws://localhost:4000");
 export default socket;
