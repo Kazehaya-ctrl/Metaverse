@@ -1,3 +1,4 @@
+"use client";
 import * as Phaser from "phaser";
 import socket from "@/components/utils/socket";
 import { playerDetailSchema } from "@/components/interfaces";
@@ -27,12 +28,64 @@ export function create(this: Phaser.Scene) {
 		"player"
 	);
 
-	player.setScale(0.02);
-
 	cursors = this.input.keyboard!.createCursorKeys();
+
+	socket.on(
+		"currentPlayers",
+		(playersList: Record<string, playerDetailSchema>) => {
+			console.log("currentPlayer hit", playersList);
+
+			// Clear existing sprites first
+			for (let key in players) {
+				players[key].destroy();
+				delete players[key];
+			}
+
+			// Add sprites for other players only
+			Object.entries(playersList).forEach(([key, playerData]) => {
+				if (key !== socket.id) {
+					addPlayer(this, key, playerData);
+				}
+			});
+
+			console.log("Current player count:", Object.keys(players).length);
+		}
+	);
+
+	socket.on("newPlayer", (playerDetail: playerDetailSchema) => {
+		if (playerDetail.id != socket.id) {
+			console.log("newPlayer hit" + socket.id);
+			addPlayer(this, playerDetail.id!, playerDetail);
+		}
+	});
+
+	socket.on("playerPosition", (playerDetail: playerDetailSchema) => {
+		console.log(playerDetail);
+		if (players[playerDetail.id!] && playerDetail.id != socket.id) {
+			players[playerDetail.id!].x = playerDetail.x;
+			players[playerDetail.id!].y = playerDetail.y;
+		}
+		console.log(players[playerDetail.id!]);
+	});
+
+	socket.on("playerDisconnect", (id: string) => {
+		if (players[id]) {
+			players[id].destroy();
+			delete players[id];
+		}
+	});
+}
+
+function addPlayer(
+	scene: Phaser.Scene,
+	id: string,
+	playerPosition: playerDetailSchema
+) {
+	players[id] = scene.add.sprite(playerPosition.x, playerPosition.y, "player");
 }
 
 export function update(this: Phaser.Scene) {
+	if (!cursors || !player) return;
 	let moved: boolean = false;
 
 	const speed = 200;

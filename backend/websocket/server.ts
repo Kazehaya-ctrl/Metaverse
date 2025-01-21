@@ -20,10 +20,16 @@ app.get("/", (req: Request, res: Response) => {
 	});
 });
 
-const io = new Server(server);
+const io = new Server(server, {
+	cors: {
+		origin: "http://localhost:3000",
+		methods: ["GET", "POST"],
+	},
+});
 
 io.on("connection", (socket) => {
 	console.log(`Connection established ${socket.id}`);
+	console.log(players);
 	players[socket.id] = {
 		x: Math.random() * 1000,
 		y: Math.random() * 1000,
@@ -31,10 +37,10 @@ io.on("connection", (socket) => {
 	};
 
 	socket.on("addNewPlayer", () => {
-		socket.broadcast.emit("newPlayer", socket.id);
+		socket.broadcast.emit("newPlayer", players[socket.id]);
 	});
 
-	socket.on("demandCurretPlayers", () => {
+	socket.on("demandCurrentPlayers", () => {
 		socket.emit("currentPlayers", players);
 	});
 
@@ -45,17 +51,19 @@ io.on("connection", (socket) => {
 			} `
 		);
 		for (let key in players) {
-			if (key === playerDetail.id) {
+			if (key == playerDetail.id) {
 				players[playerDetail.id] = {
 					x: playerDetail.x,
 					y: playerDetail.y,
 					id: playerDetail.id,
 				};
 			}
+			socket.broadcast.emit("playerPosition", playerDetail);
 		}
 	});
 
 	socket.on("disconnect", () => {
+		console.log(`Player Disconnected ${socket.id}`);
 		delete players[socket.id];
 		io.emit("playerDisconnect", socket.id);
 	});
