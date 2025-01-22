@@ -11,14 +11,14 @@ export default function Game() {
 			const Phaser = await import("phaser");
 			const { gameConfig } = await import("@/phaser/game/gameConfig");
 			game = new Phaser.Game(gameConfig);
+			socket.emit("demandPlayers");
 			socket.emit("addNewPlayer");
-			socket.emit("demandCurrentPlayers");
 		};
 		initializeGame();
 
 		return () => {
 			game.destroy(true);
-			socket.emit("playerDisconnect");
+			socket.disconnect();
 		};
 	}, []);
 	return (

@@ -30,27 +30,24 @@ export function create(this: Phaser.Scene) {
 
 	cursors = this.input.keyboard!.createCursorKeys();
 
-	socket.on(
-		"currentPlayers",
-		(playersList: Record<string, playerDetailSchema>) => {
-			console.log("currentPlayer hit", playersList);
+	socket.on("getPlayers", (playersList: Record<string, playerDetailSchema>) => {
+		console.log("currentPlayer hit", playersList);
 
-			// Clear existing sprites first
-			for (let key in players) {
-				players[key].destroy();
-				delete players[key];
-			}
-
-			// Add sprites for other players only
-			Object.entries(playersList).forEach(([key, playerData]) => {
-				if (key !== socket.id) {
-					addPlayer(this, key, playerData);
-				}
-			});
-
-			console.log("Current player count:", Object.keys(players).length);
+		// Clear existing sprites first
+		for (let key in players) {
+			players[key].destroy();
+			delete players[key];
 		}
-	);
+
+		// Add sprites for other players only
+		Object.entries(playersList).forEach(([key, playerData]) => {
+			if (key !== socket.id) {
+				addPlayer(this, key, playerData);
+			}
+		});
+
+		console.log("Current player count:", Object.keys(players).length);
+	});
 
 	socket.on("newPlayer", (playerDetail: playerDetailSchema) => {
 		if (playerDetail.id != socket.id) {

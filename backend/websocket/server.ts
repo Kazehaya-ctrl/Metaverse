@@ -36,12 +36,14 @@ io.on("connection", (socket) => {
 		id: socket.id,
 	};
 
-	socket.on("addNewPlayer", () => {
-		socket.broadcast.emit("newPlayer", players[socket.id]);
+	socket.on("demandPlayers", () => {
+		console.log("Sending current players to", socket.id);
+		console.log("Available players:", Object.keys(players));
+		socket.emit("getPlayers", players);
 	});
 
-	socket.on("demandCurrentPlayers", () => {
-		socket.emit("currentPlayers", players);
+	socket.on("addNewPlayer", () => {
+		socket.broadcast.emit("newPlayer", players[socket.id]);
 	});
 
 	socket.on("playerMoved", (playerDetail: playerDetailSchema) => {
