@@ -2,7 +2,7 @@
 
 import * as Phaser from "phaser";
 import { useEffect } from "react";
-import socket from "@/components/utils/socket";
+import { getSocket } from "@/components/utils/socket";
 
 export default function Game() {
 	useEffect(() => {
@@ -11,13 +11,20 @@ export default function Game() {
 			const Phaser = await import("phaser");
 			const { gameConfig } = await import("@/phaser/game/gameConfig");
 			game = new Phaser.Game(gameConfig);
-			socket.emit("demandPlayers");
-			socket.emit("addNewPlayer");
+
+			const socket = getSocket();
+			socket.on("connect", () => {
+				socket.emit("demandPlayers");
+				socket.emit("addNewPlayer");
+			});
 		};
 		initializeGame();
 
 		return () => {
-			game.destroy(true);
+			if (game) {
+				game.destroy(true);
+			}
+			const socket = getSocket();
 			socket.disconnect();
 		};
 	}, []);

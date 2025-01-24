@@ -1,11 +1,12 @@
 "use client";
 import * as Phaser from "phaser";
-import socket from "@/components/utils/socket";
+import { getSocket } from "@/components/utils/socket";
 import { playerDetailSchema } from "@/components/interfaces";
 
 let player: Phaser.GameObjects.Sprite;
 let players: Record<string, Phaser.GameObjects.Sprite> = {};
 let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+const socket = getSocket();
 
 export function preload(this: Phaser.Scene) {
 	this.load.image("background", "/assets/sky.png");
@@ -33,13 +34,11 @@ export function create(this: Phaser.Scene) {
 	socket.on("getPlayers", (playersList: Record<string, playerDetailSchema>) => {
 		console.log("currentPlayer hit", playersList);
 
-		// Clear existing sprites first
 		for (let key in players) {
 			players[key].destroy();
 			delete players[key];
 		}
 
-		// Add sprites for other players only
 		Object.entries(playersList).forEach(([key, playerData]) => {
 			if (key !== socket.id) {
 				addPlayer(this, key, playerData);

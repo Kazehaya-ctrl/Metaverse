@@ -29,12 +29,12 @@ const io = new Server(server, {
 
 io.on("connection", (socket) => {
 	console.log(`Connection established ${socket.id}`);
-	console.log(players);
 	players[socket.id] = {
 		x: Math.random() * 1000,
 		y: Math.random() * 1000,
 		id: socket.id,
 	};
+	console.log(players);
 
 	socket.on("demandPlayers", () => {
 		console.log("Sending current players to", socket.id);
