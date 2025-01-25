@@ -14,12 +14,6 @@ const server = app.listen(port, () => {
 	console.log(`> Backend Running on port ${port}`);
 });
 
-app.get("/", (req: Request, res: Response) => {
-	res.json({
-		msg: "Backend Running",
-	});
-});
-
 const io = new Server(server, {
 	cors: {
 		origin: "http://localhost:3000",
@@ -36,15 +30,9 @@ io.on("connection", (socket) => {
 	};
 	console.log(players);
 
-	socket.on("demandPlayers", () => {
-		console.log("Sending current players to", socket.id);
-		console.log("Available players:", Object.keys(players));
-		socket.emit("getPlayers", players);
-	});
+	socket.emit("currentPlayers", players);
 
-	socket.on("addNewPlayer", () => {
-		socket.broadcast.emit("newPlayer", players[socket.id]);
-	});
+	socket.emit("addingNewPlayer", players[socket.id]);
 
 	socket.on("playerMoved", (playerDetail: playerDetailSchema) => {
 		console.log(

@@ -1,12 +1,12 @@
 "use client";
 import * as Phaser from "phaser";
-import { getSocket } from "@/components/utils/socket";
+import io from "socket.io-client";
 import { playerDetailSchema } from "@/components/interfaces";
 
 let player: Phaser.GameObjects.Sprite;
 let players: Record<string, Phaser.GameObjects.Sprite> = {};
 let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-const socket = getSocket();
+const socket = io("ws://localhost:4000");
 
 export function preload(this: Phaser.Scene) {
 	this.load.image("background", "/assets/sky.png");
@@ -31,24 +31,25 @@ export function create(this: Phaser.Scene) {
 
 	cursors = this.input.keyboard!.createCursorKeys();
 
-	socket.on("getPlayers", (playersList: Record<string, playerDetailSchema>) => {
-		console.log("currentPlayer hit", playersList);
-
-		for (let key in players) {
-			players[key].destroy();
-			delete players[key];
-		}
-
-		Object.entries(playersList).forEach(([key, playerData]) => {
-			if (key !== socket.id) {
-				addPlayer(this, key, playerData);
+	socket.on(
+		"currentPlayers",
+		(playersList: Record<string, playerDetailSchema>) => {
+			for (let key in players) {
+				players[key].destroy();
+				delete players[key];
 			}
-		});
 
-		console.log("Current player count:", Object.keys(players).length);
-	});
+			Object.entries(playersList).forEach(([key, playerData]) => {
+				if (key !== socket.id) {
+					addPlayer(this, key, playerData);
+				}
+			});
 
-	socket.on("newPlayer", (playerDetail: playerDetailSchema) => {
+			console.log("Current player count:", Object.keys(players).length);
+		}
+	);
+
+	socket.on("addingNewPlayer", (playerDetail: playerDetailSchema) => {
 		if (playerDetail.id != socket.id) {
 			console.log("newPlayer hit" + socket.id);
 			addPlayer(this, playerDetail.id!, playerDetail);
